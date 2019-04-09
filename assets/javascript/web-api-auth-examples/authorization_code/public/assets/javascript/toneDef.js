@@ -1,3 +1,4 @@
+
 //TRACK LOOKUP
 // $.ajaxPrefilter(function (options) {
 //   if (options.crossDomain && jQuery.support.cors) {
@@ -262,7 +263,9 @@
 // });
 
 //SPOTIFY Web Playback SDK
+
 var access_token = "";
+var player;
 (function() {
 
   /**
@@ -314,32 +317,74 @@ var access_token = "";
         }
       }).done(function(data) {
         access_token = data.access_token;
-        console.log(access_token);
         return(access_token);
       });
     }, false);
   }
-})();
-window.onSpotifyWebPlaybackSDKReady = () => {
-  
-  var player = new Spotify.Player({
-    name: 'Daft Punk Player',
-    getOAuthToken: callback => {
-      // Run code to get a fresh access token
-  
-      callback(access_token);
-    },
-    volume: 0.5
-  });
-  	
-  player.connect().then(success => {
-    if (success) {
-      console.log('The Web Playback SDK successfully connected to Spotify!');
-    } 
-  })
+  window.onSpotifyWebPlaybackSDKReady = () => {
+    console.log("you know");
+    var token = access_token;
+    var player = new Spotify.Player({
+      name: 'Web Playback SDK Quick Start Player',
+      getOAuthToken: cb => { cb(token); }
+    });
+    
+    // Error handling
+    player.addListener('initialization_error', ({ message }) => { console.error(message); });
+    player.addListener('authentication_error', ({ message }) => { console.error(message); });
+    player.addListener('account_error', ({ message }) => { console.error(message); });
+    player.addListener('playback_error', ({ message }) => { console.error(message); });
+    
+    // Playback status updates
+    player.addListener('player_state_changed', state => { console.log(state); });
+    
+    // Ready
+    player.addListener('ready', ({ device_id }) => {
+      console.log('Ready with Device ID', device_id);
+    });
+    
+    // Not Ready
+    player.addListener('not_ready', ({ device_id }) => {
+      console.log('Device ID has gone offline', device_id);
+    });
 
-  player.addListener('ready', ({ device_id }) => {
-    console.log('The Web Playback SDK is ready to play music!');
-    console.log('Device ID', device_id);
-  })
-};
+    
+    // Connect to the player!
+    player.connect();
+    
+    $("#playButton").click(function(){
+      player.resume();
+      playerStatus();
+    });
+    $("#pauseButton").click(function(){
+      player.pause();
+      playerStatus();
+    });
+    $("#previousButton").click(function(){
+      player.previousTrack();
+      playerStatus();
+    });
+    $("#nextButton").click(function(){
+      player.nextTrack();
+      playerStatus();
+    });
+    
+    function playerStatus(){
+      player.getCurrentState().then(state => {
+      if (!state) {
+        console.error('User is not playing music through the Web Playback SDK');
+        return;
+      }
+      let {
+        current_track,
+        next_tracks: [next_track]
+      } = state.track_window;
+      
+      console.log('Currently Playing', current_track);
+      console.log('Playing Next', next_track);
+
+      });
+    };
+  };
+
+})();
