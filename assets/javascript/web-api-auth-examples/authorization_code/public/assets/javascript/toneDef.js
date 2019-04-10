@@ -369,6 +369,18 @@ var player;
       playerStatus();
     });
     
+    $("#submitButton").click(function(){
+      var artist = $('#searchInput').val().trim()
+      $.ajax({
+        url: 'https://api.spotify.com/v1/search?q=' + artist + '&type=artist',
+        headers: {
+          'Authorization': 'Bearer ' + access_token
+        },
+        method: "GET"
+      }).then(function(response) {
+        console.log(response);
+      });
+    });
     function playerStatus(){
       player.getCurrentState().then(state => {
       if (!state) {
