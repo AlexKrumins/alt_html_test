@@ -355,8 +355,7 @@ var device_id = "";
           'Authorization': 'Bearer ' + access_token,
         },
       }).then(function() {
-        console.log("hot lead");
-        console.log(device_id);
+        console.log("Device ID: " + device_id + " now playing");
       });
 
     });
@@ -399,6 +398,27 @@ var device_id = "";
         console.log(response);
       });
     });
+    $("#photosTab").click(function(){
+      event.preventDefault();
+      $.ajax({
+        url: 'https://api.spotify.com/v1/me/player/play',
+        method: 'PUT',
+        data: JSON.stringify({
+          "context_uri": "spotify:album:5ht7ItJgpBH7W6vJ5BqpPr",
+          "offset": {
+            "position": 5
+          },
+          "position_ms": 0
+        }),
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + access_token,
+        },
+      }).then(function() {
+        console.log("hot lead");
+      });
+    })
 
     function playerStatus(){
       player.getCurrentState().then(state => {
