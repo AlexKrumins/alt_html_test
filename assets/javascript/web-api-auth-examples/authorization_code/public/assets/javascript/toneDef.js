@@ -266,6 +266,7 @@
 
 var access_token = "";
 var player;
+var device_id = "";
 (function() {
 
   /**
@@ -322,10 +323,10 @@ var player;
     }, false);
   }
   window.onSpotifyWebPlaybackSDKReady = () => {
-    console.log("you know");
+    
     var token = access_token;
     var player = new Spotify.Player({
-      name: 'Web Playback SDK Quick Start Player',
+      name: 'toneDef',
       getOAuthToken: cb => { cb(token); }
     });
     
@@ -338,11 +339,27 @@ var player;
     // Playback status updates
     player.addListener('player_state_changed', state => { console.log(state); });
     
-    // Ready
     player.addListener('ready', ({ device_id }) => {
       console.log('Ready with Device ID', device_id);
+      $.ajax({
+        url: 'https://api.spotify.com/v1/me/player',
+        method: 'PUT',
+        data: JSON.stringify({
+          "device_ids": [
+            device_id
+          ]
+        }),
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + access_token,
+        },
+      }).then(function() {
+        console.log("hot lead");
+        console.log(device_id);
+      });
+
     });
-    
     // Not Ready
     player.addListener('not_ready', ({ device_id }) => {
       console.log('Device ID has gone offline', device_id);
@@ -381,19 +398,20 @@ var player;
         console.log(response);
       });
     });
+
     function playerStatus(){
       player.getCurrentState().then(state => {
-      if (!state) {
-        console.error('User is not playing music through the Web Playback SDK');
-        return;
-      }
-      let {
-        current_track,
-        next_tracks: [next_track]
-      } = state.track_window;
-      
-      console.log('Currently Playing', current_track);
-      console.log('Playing Next', next_track);
+        if (!state) {
+          console.error('User is not playing music through the Web Playback SDK');
+          return;
+        } let {
+          current_track,
+          next_tracks: [next_track]
+        } = state.track_window;
+        console.log(current_track.album.uri)
+        
+        console.log('Currently Playing', current_track);
+        console.log('Playing Next', next_track);
 
       });
     };
